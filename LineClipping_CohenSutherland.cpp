@@ -18,9 +18,7 @@
 #include <GL/glut.h>
 #endif
 
-#include<stdio.h>
 #include<bits/stdc++.h>
-#include <stdlib.h>
 
 using namespace std;
 
@@ -35,9 +33,7 @@ static int stacks = 16;
 
 int posx0, posy0, posx1,posy1;
 int cnt = 0;
-bool flag =false;
-int xmax= 160, xmin= -160, ymax= 160, ymin= -160;
-
+int xmax= 150, xmin= -150, ymax= 150, ymin= -150;
 
 /* GLUT callback Handlers */
 
@@ -50,13 +46,6 @@ static void resize(int width, int height)
     glOrtho(-320, 319, -240, 239, -1, 1);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity() ;
-}
-
-int calcX(int x){
-    return x-320;
-}
-int calcY(int y){
-    return 239-y;
 }
 
 
@@ -186,7 +175,6 @@ void lineDraw(int x0, int y0,int x1, int y1 )
     }
     else if(zone ==7 )
     {
-        // glColor3d(6,0,1);
         drawLine_0(x0,-y0,x1,-y1,7);
     }
 }
@@ -211,6 +199,8 @@ void cohenSutherland(int x0, int y0, int x1, int y1){
     while(1){
         if(!(code0 | code1)){
             //completely accepted
+            
+            glColor3d(6,0,0);  // Red
             lineDraw(x0, y0, x1, y1);
             break;
         }
@@ -224,26 +214,34 @@ void cohenSutherland(int x0, int y0, int x1, int y1){
             else code = code1;
             if(code & TOP){
                 y = ymax;
-                x = x0 + round((x1-x0)*(ymax-y0)/(y1-y0));
+                x = x0 + round((x1-x0)*(y-y0)/(y1-y0));
             }
             else if(code & BOTTOM){
                 y = ymin;
-                x = x0 + round((x1-x0)*(ymin-y0)/(y1-y0));
+                x = x0 + round((x1-x0)*(y-y0)/(y1-y0));
             }
             else if(code & RIGHT){
                 x = xmax;
-                y = y0 + round((y1-y0)*(xmax-x0)/(x1-x0));
+                y = y0 + round((y1-y0)*(x-x0)/(x1-x0));
             }
             else{
                 x = xmin;
-                y = y0 + round((y1-y0)*(xmin-x0)/(x1-x0));
+                y = y0 + round((y1-y0)*(x-x0)/(x1-x0));
             }
 
             if(code == code0){
+                // Drawing the remaining of the clipped line Outside the grid
+                glColor3d(0,6,0);
+                lineDraw(x0,y0,x,y);
+
                 x0 = x, y0 = y;
                 code0 = makeCode(x0, y0);
             }
             else{
+                // Drawing the remaining of the clipped line Outside the grid
+                glColor3d(0,6,0);
+                lineDraw(x,y,x1,y1);
+
                 x1 = x, y1 = y;
                 code1 = makeCode(x1, y1);
             }
@@ -255,9 +253,9 @@ void mouse_button_callback(int button, int state, int x, int y)
 {
     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-        if(cnt==0) posx0 = calcX(x), posy0 = calcY(y), cnt++;
+        if(cnt==0) posx0 = x-320, posy0 = 239-y, cnt++;
         else {
-            posx1 = calcX(x), posy1 = calcY(y), cnt=0;
+            posx1 = x-320, posy1 = 239-y, cnt=0;
             cout <<"First point -> (" <<posx0 << "," << posy0<< ")" << endl;
             cout <<"Second point -> (" <<posx1 << "," << posy1<< ")" << endl;
           }
@@ -276,26 +274,22 @@ static void display(void)
     glVertex2i(0, 239);
     glEnd();
 
-    glutMouseFunc(mouse_button_callback);
 
     glBegin(GL_POINTS);
 
     glVertex2i(x, y+1);
     glVertex2i(x, y);
-
+    glutMouseFunc(mouse_button_callback);
     
-    //make the line clapping grid
-    glColor3d(1,0,0);//set color red
+    //Line clipping grid
+    glColor3d(0,2,5); // Kind of blue(blue + green)
     lineDraw(xmax,239,xmax,-240);
     lineDraw(xmin,239,xmin,-240);
     lineDraw(-320,ymax,319,ymax);
     lineDraw(-320,ymin,319,ymin);
 
-    //draw lies
-    glColor3d(0,1,0);  
-
     if(cnt ==0)
-    cohenSutherland(posx0,posy0,posx1,posy1);
+        cohenSutherland(posx0,posy0,posx1,posy1);
 
     glEnd();
 
