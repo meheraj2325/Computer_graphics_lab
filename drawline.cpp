@@ -135,7 +135,7 @@ void drawLine_5(int x0, int y0,int x1, int y1)
     int dx= x1-x0,dy= y1-y0;
     int x=x0,y=y0,d=2*dx-dy,dS=2*dx,dSW=2*(dx-dy);
     glVertex2i(x,y);
-    while(y<y1)
+    while(y>y1)
     {
         if(d<0)//S
         {
